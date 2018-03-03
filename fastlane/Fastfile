@@ -37,7 +37,7 @@ platform :ios do
     end
 
 	# cocoapods
-	Actions.sh("pods install")
+	Actions.sh("pod install")
 
     setup_jenkins_support(options)
     
