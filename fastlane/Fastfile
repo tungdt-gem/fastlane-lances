@@ -36,7 +36,8 @@ platform :ios do
       raise "Param :export_method is required"
     end
 
-	cocoapods
+	# cocoapods
+	Actions.sh("pods install")
 
     setup_jenkins_support(options)
     
