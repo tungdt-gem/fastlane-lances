@@ -1,19 +1,176 @@
-# This file contains the fastlane.tools configuration
-# You can find the documentation at https://docs.fastlane.tools
-#
-# For a list of all available actions, check out
-#
-#     https://docs.fastlane.tools/actions
-#
-
-# Uncomment the line if you want fastlane to automatically update itself
-# update_fastlane
-
 default_platform(:ios)
 
 platform :ios do
-  desc "Description of what the lane does"
-  lane :custom_lane do
-    # add actions here: https://docs.fastlane.tools/actions
+  desc "This lane for manual build and upload diawi"
+
+  before_all do
+    update_fastlane
+    setup_jenkins
+    ENV['jenkins-support-path'] = "fastlane/jenkins-support/"
+    ENV['export_options_path'] = ENV['jenkins-support-path'] + "export_options.plist"
+  end
+
+  # Options:
+  #     - *app_name: App name
+  #     - *scheme: Xcode Workspace Scheme
+  #     - *export_team_id: Team ID
+  #     - *export_method: enterprise|app-store|ad-hoc|package|enterprise|development|developer-id
+  #     - appicon_name: Name of app icon in folder jenkins-support
+  #     - keychain_file: Name of keychain file in folder jenkins-support
+  #     - keychain_password: Password of keychain
+  #     - upload_base_url: URL
+  lane :build_ipa do |options|
+    unless options[:app_name]
+      raise "Param :app_name is required"
+    end
+
+    unless options[:scheme]
+      raise "Param :scheme is required"
+    end
+
+    unless options[:export_team_id]
+      raise "Param :export_team_id is required"
+    end
+
+    unless options[:export_method]
+      raise "Param :export_method is required"
+    end
+
+    setup_jenkins_support(options)
+    
+    config_build(options)
+
+    if ENV["DIAWI_TOKEN"] 
+      diawi(
+        file: lane_context[SharedValues::IPA_OUTPUT_PATH]
+      )
+    end
+
+  end
+
+  error do |lane, exception|
+    if ENV["SLACK_URL"]
+      slack(
+        message: exception.message,
+        success: false
+      ) 
+    end
+  end
+
+  def custom_set_version
+    folder = '../'
+
+    command_prefix = [
+      'cd',
+      File.expand_path(folder).shellescape,
+      '&&'
+    ].join(' ')
+
+    command_suffix = [
+      '&&',
+      'cd',
+      '-'
+    ].join(' ')
+
+    build_number = git_branch + "-" + last_git_commit[:abbreviated_commit_hash] + "-" + String(number_of_commits)
+
+    command = [
+      command_prefix,
+      'agvtool',
+      "new-version -all \"#{build_number}\"",
+      command_suffix
+    ].join(' ')
+    Actions.sh(command)
+  end
+
+  def custom_build_number
+    return git_branch + "-" + last_git_commit[:abbreviated_commit_hash] + "-" + String(number_of_commits)
+  end
+
+  def setup_jenkins_support(options)
+    keychain_file_path = ""    
+    keychain_enable = false
+    if options[:keychain_file] 
+      keychain_file_path = ENV["jenkins-support-path"] + options[:keychain_file]      
+      keychain_enable = true
+    end
+
+    keychain_password = ""
+    if options[:keychain_password]
+      keychain_password = options[:keychain_password]
+    end
+
+    setup_jenkins(
+      force: true,
+      keychain_path: keychain_file_path,
+      keychain_password: keychain_password,
+      set_default_keychain: false,
+      add_keychain_to_search_list: true,
+    )
+  end
+
+  def config_build(options)
+    Actions.sh("rm -rf " + ENV['GYM_BUILD_PATH'] + "/*")
+
+    app_name = options[:app_name]
+
+    upload_base_url = ""
+    if options[:upload_base_url]
+      upload_base_url = options[:upload_base_url]
+    end
+
+    appicon_url = ""
+    if options[:appicon_name] 
+      appicon_url = upload_base_url + "/" + app_name + "/" + custom_build_number + "/" + options[:appicon_name]
+    end
+
+    app_URL = upload_base_url + "/" + app_name + "/" + custom_build_number + "/" + app_name + ".ipa"
+
+    output_dir = ENV['GYM_BUILD_PATH'] + "/" + custom_build_number + "/"
+
+    if options[:upload_base_url]   
+      upload_base_url = options[:upload_base_url]
+      path = File.expand_path('../' + ENV['export_options_path'])
+      UI.message('Parse export_options.plist at path: ' + path)
+
+      plist = Plist.parse_xml(path)      
+      UI.message('Parsed:' + String(plist))
+
+      plist[:manifest] = {
+        :appURL => app_URL,
+        :displayImageURL => appicon_url,
+        :fullSizeImageURL => appicon_url
+      }
+      new_plist = Plist::Emit.dump(plist)
+
+      UI.message('Updated: ' + String(new_plist))
+      File.write(path, new_plist)
+    end    
+
+    # export_options = {
+    #     manifest: {
+    #       appURL: app_URL,
+    #       displayImageURL: appicon_url,
+    #       fullSizeImageURL: appicon_url,
+    #     },  
+    #   }
+
+    custom_set_version
+
+    gym(
+      scheme: options[:scheme],
+      export_team_id: options[:export_team_id],
+      export_method: options[:export_method],
+      output_name: app_name,
+      output_directory: output_dir,
+      export_options: ENV['export_options_path'] 
+    )
+
+    if options[:appicon_name] 
+      appicon_path = File.expand_path("../" + ENV['jenkins-support-path'] + options[:appicon_name])
+      target_appicon_path = File.expand_path(output_dir + options[:appicon_name])
+      Actions.sh("yes | cp \"" + appicon_path + "\" \"" + target_appicon_path + "\"")      
+    end
   end
 end
+
