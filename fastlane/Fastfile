@@ -171,6 +171,8 @@ platform :ios do
       target_appicon_path = File.expand_path(output_dir + options[:appicon_name])
       Actions.sh("yes | cp \"" + appicon_path + "\" \"" + target_appicon_path + "\"")      
     end
+
+    Actions.sh("rm -rf \"" + output_dir + "\"*.xcarchive")
   end
 end
 
