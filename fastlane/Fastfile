@@ -74,6 +74,8 @@ platform :ios do
 
     build_number = git_branch + "-" + last_git_commit[:abbreviated_commit_hash] + "-" + String(number_of_commits)
 
+    UI.message("Set build number: " + build_number)
+
     command = [
       command_prefix,
       'agvtool',
@@ -84,6 +86,7 @@ platform :ios do
   end
 
   def custom_build_number
+  	UI.message("branch: " + git_branch)
     return git_branch + "-" + last_git_commit[:abbreviated_commit_hash] + "-" + String(number_of_commits)
   end
 
@@ -130,30 +133,19 @@ platform :ios do
 
     if options[:upload_base_url]   
       upload_base_url = options[:upload_base_url]
-      path = File.expand_path('../' + ENV['export_options_path'])
-      UI.message('Parse export_options.plist at path: ' + path)
 
+      path = File.expand_path('../' + ENV['export_options_path'])
       plist = Plist.parse_xml(path)      
-      UI.message('Parsed:' + String(plist))
 
       plist[:manifest] = {
         :appURL => app_URL,
         :displayImageURL => appicon_url,
         :fullSizeImageURL => appicon_url
       }
-      new_plist = Plist::Emit.dump(plist)
 
-      UI.message('Updated: ' + String(new_plist))
+      new_plist = Plist::Emit.dump(plist)
       File.write(path, new_plist)
     end    
-
-    # export_options = {
-    #     manifest: {
-    #       appURL: app_URL,
-    #       displayImageURL: appicon_url,
-    #       fullSizeImageURL: appicon_url,
-    #     },  
-    #   }
 
     custom_set_version
 
