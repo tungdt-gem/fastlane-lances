@@ -156,7 +156,9 @@ platform :ios do
       export_method: options[:export_method],
       output_name: app_name,
       output_directory: output_dir,
-      export_options: ENV['export_options_path'] 
+      export_options: ENV['export_options_path'],
+      clean: true,
+      slient: true
     )
 
     if options[:appicon_name] 
