@@ -125,10 +125,10 @@ platform :ios do
 
     appicon_url = ""
     if options[:appicon_name] 
-      appicon_url = upload_base_url + "/" + app_name + "/" + custom_build_number + "/" + options[:appicon_name]
+      appicon_url = upload_base_url + "/" + custom_build_number + "/" + options[:appicon_name]
     end
 
-    app_URL = upload_base_url + "/" + app_name + "/" + custom_build_number + "/" + app_name + ".ipa"
+    app_URL = upload_base_url + "/" + custom_build_number + "/" + app_name + ".ipa"
 
     output_dir = ENV['GYM_BUILD_PATH'] + "/" + custom_build_number + "/"
 
