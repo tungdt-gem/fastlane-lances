@@ -6,6 +6,7 @@ platform :ios do
     setup_jenkins
     ENV['jenkins-support-path'] = "fastlane/jenkins-support/"
     ENV['export_options_path'] = ENV['jenkins-support-path'] + "export_options.plist"
+    ENV["FASTLANE_DONT_STORE_PASSWORD"] = "1"
   end
 
   # Options:
@@ -34,9 +35,14 @@ platform :ios do
       raise "Param :export_method is required"
     end
 
-    ENV["FASTLANE_USER"] = "tungdt@Gemvietnam.com"
-    ENV["FASTLANE_PASSWORD"] = "123456"
-    ENV["FASTLANE_DONT_STORE_PASSWORD"] = "1"
+    unless ENV["FASTLANE_USER"]
+      raise "Environment variable FASTLANE_USER is required"      
+    end
+
+    unless ENV["FASTLANE_PASSWORD"]
+      raise "Environment variable FASTLANE_PASSWORD is required"      
+    end
+    
     sigh
 
     setup_jenkins_support(options)
