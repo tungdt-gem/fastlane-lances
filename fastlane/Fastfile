@@ -36,7 +36,7 @@ platform :ios do
 
     ENV["FASTLANE_USER"] = "tungdt@Gemvietnam.com"
     ENV["FASTLANE_PASSWORD"] = "123456"
-    ENV["FASTLANE_DONT_STORE_PASSWORD"] = 1
+    ENV["FASTLANE_DONT_STORE_PASSWORD"] = "1"
     sigh
 
     setup_jenkins_support(options)
