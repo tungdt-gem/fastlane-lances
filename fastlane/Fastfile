@@ -86,7 +86,8 @@ platform :ios do
   end
 
   def custom_build_number
-  	branch = git_branch.sub '/' '-'
+  	branch = git_branch
+  	branch = branch.sub '/' '-'
   	UI.message("branch: " + branch)
     
     branch + "--" + last_git_commit[:abbreviated_commit_hash] + "--" + String(number_of_commits)
