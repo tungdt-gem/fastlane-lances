@@ -158,7 +158,7 @@ platform :ios do
       output_directory: output_dir,
       export_options: ENV['export_options_path'],
       clean: true,
-      slient: true
+      silent: true
     )
 
     if options[:appicon_name] 
