@@ -42,6 +42,10 @@ platform :ios do
     unless ENV["FASTLANE_PASSWORD"]
       raise "Environment variable FASTLANE_PASSWORD is required"      
     end
+
+    unless ENV["FASTLANE_TEAM_ID"]
+      raise "Environment variable FASTLANE_TEAM_ID is required"      
+    end
     
     sigh
 
