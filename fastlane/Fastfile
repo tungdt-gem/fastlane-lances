@@ -43,17 +43,17 @@ platform :ios do
       raise "Environment variable FASTLANE_PASSWORD is required"      
     end
 
-    unless ENV["FASTLANE_TEAM_ID"]
-      raise "Environment variable FASTLANE_TEAM_ID is required"      
-    end
+    #unless ENV["FASTLANE_TEAM_ID"]
+    #  raise "Environment variable FASTLANE_TEAM_ID is required"      
+    #end
     
-    UI.message("TeamID: " + ENV["FASTLANE_TEAM_ID"])
+    #UI.message("TeamID: " + ENV["FASTLANE_TEAM_ID"])
 
-    team_id(ENV["FASTLANE_TEAM_ID"])
+    #team_id(ENV["FASTLANE_TEAM_ID"])
 
-    sigh(
-      app_identifier: ENV["APP_IDENTIFIER"]
-    )
+    #sigh(
+    #  app_identifier: ENV["APP_IDENTIFIER"]
+    #)
 
     setup_jenkins_support(options)
     
